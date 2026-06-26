@@ -21,16 +21,17 @@ import (
 )
 
 const (
-	otaChunkSize       = 512
-	otaWindowSize      = 8
-	otaTimeout         = 30 * time.Minute
-	otaAckTimeout      = 180 * time.Second
-	otaDiscoveryWindow = 8 * time.Second
-	otaChunkMagic      = "QOTA"
-	otaSessionHexLen   = 32
-	otaSigSectorSize   = 4096
-	otaSigMagic        = 0xe7
-	otaSigVersionRSA   = 2
+	otaQTermChunkSize   = 16 * 1024
+	otaBarcodeChunkSize = 512
+	otaWindowSize       = 8
+	otaTimeout          = 30 * time.Minute
+	otaAckTimeout       = 180 * time.Second
+	otaDiscoveryWindow  = 8 * time.Second
+	otaChunkMagic       = "QOTA"
+	otaSessionHexLen    = 32
+	otaSigSectorSize    = 4096
+	otaSigMagic         = 0xe7
+	otaSigVersionRSA    = 2
 )
 
 type otaTarget struct {
@@ -38,6 +39,7 @@ type otaTarget struct {
 	controlTopic    string
 	chunkTopic      string
 	statusTopic     string
+	chunkSize       int
 	discoverDevices bool
 }
 
@@ -51,11 +53,11 @@ type otaStatus struct {
 }
 
 func qtermOTATarget() otaTarget {
-	return otaTarget{name: "qterm", discoverDevices: false}
+	return otaTarget{name: "qterm", chunkSize: otaQTermChunkSize, discoverDevices: false}
 }
 
 func barcodeOTATarget() otaTarget {
-	return otaTarget{name: "barcode", discoverDevices: true}
+	return otaTarget{name: "barcode", chunkSize: otaBarcodeChunkSize, discoverDevices: true}
 }
 
 func runOTACommand(cfg ctlConfig, args []string, target otaTarget) error {
@@ -236,7 +238,7 @@ func uploadOTAChunks(client mqtt.Client, statusCh <-chan otaStatus, target otaTa
 		return err
 	}
 	defer fh.Close()
-	buf := make([]byte, otaChunkSize)
+	buf := make([]byte, target.chunkSize)
 	offset := 0
 	acked := 0
 	pending := 0
@@ -275,7 +277,7 @@ func uploadOTAChunks(client mqtt.Client, statusCh <-chan otaStatus, target otaTa
 			return fmt.Errorf("device ack offset %d above sent offset %d", status.Written, offset)
 		}
 		acked = status.Written
-		pending = (offset - acked + otaChunkSize - 1) / otaChunkSize
+		pending = (offset - acked + target.chunkSize - 1) / target.chunkSize
 		percent := int((int64(acked) * 100) / size)
 		if percent != lastPercent {
 			lastPercent = percent
@@ -294,7 +296,7 @@ func uploadOTAChunksForDevices(client mqtt.Client, statusCh <-chan otaStatus, ta
 		return err
 	}
 	defer fh.Close()
-	buf := make([]byte, otaChunkSize)
+	buf := make([]byte, target.chunkSize)
 	offset := 0
 	lastPercent := -1
 	for offset < int(size) {
