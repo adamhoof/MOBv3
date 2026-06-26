@@ -1,0 +1,104 @@
+services:
+  mosquitto_broker:
+    container_name: mobv3_mosquitto_broker
+    image: ${MOSQUITTO_IMAGE}
+    restart: unless-stopped
+    user: "1883:0"
+    env_file:
+      - .env
+    ports:
+      - "${HOST_BIND_IP}:${MQTT_PORT}:${MQTT_PORT}"
+    volumes:
+      - ./mosquitto:/mosquitto/config:ro,z
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - ${CERT_DIR}/mosquitto_server.crt:/mosquitto/certs/mosquitto_server.crt:ro,z
+      - ${CERT_DIR}/ca.crt:/mosquitto/certs/ca.crt:ro,z
+    secrets:
+      - source: mobv3_mosquitto_server_key
+        mode: "0440"
+    networks:
+      - mobv3_network
+
+  catalog_service:
+    container_name: mobv3_catalog_service
+    build:
+      context: .
+      dockerfile: ./cmd/catalog_service/Containerfile
+      args:
+        - GO_IMAGE=${GO_IMAGE}
+        - ALPINE_IMAGE=${ALPINE_IMAGE}
+        - TARGETARCH=${TARGETARCH}
+        - WORKDIR=${WORKDIR}
+    restart: unless-stopped
+    user: "1000:0"
+    depends_on:
+      - mosquitto_broker
+    env_file:
+      - .env
+    environment:
+      XDG_CACHE_HOME: /data/.cache
+    ports:
+      - "${HOST_BIND_IP}:${CATALOG_HTTP_PORT}:${CATALOG_HTTP_PORT}"
+    volumes:
+      - catalog_data:/data
+      - ${CERT_DIR}/catalog_server.crt:${WORKDIR}/certs/catalog_server.crt:ro,z
+      - ${CERT_DIR}/ca.crt:${WORKDIR}/certs/ca.crt:ro,z
+      - ${CERT_DIR}/client.crt:${WORKDIR}/certs/client.crt:ro,z
+    secrets:
+      - source: mobv3_catalog_server_key
+        mode: "0440"
+      - source: mobv3_client_key
+        mode: "0440"
+    networks:
+      - mobv3_network
+
+  qrproxy:
+    container_name: mobv3_qrproxy
+    build:
+      context: .
+      dockerfile: ./cmd/qrproxy/Containerfile
+      args:
+        - GO_IMAGE=${GO_IMAGE}
+        - TARGETARCH=${TARGETARCH}
+    restart: unless-stopped
+    user: "1000:0"
+    depends_on:
+      - mosquitto_broker
+    env_file:
+      - .env
+    environment:
+      MQTT_PROTOCOL: ${MQTT_PROTOCOL}
+      MQTT_HOST: mosquitto_broker
+      MQTT_PORT: ${MQTT_PORT}
+      TLS_CA_PATH: ${WORKDIR}/certs/ca.crt
+      TLS_CLIENT_CERT_PATH: ${WORKDIR}/certs/client.crt
+      TLS_CLIENT_KEY_PATH: /run/secrets/mobv3_client_key
+    ports:
+      - "${HOST_BIND_IP}:${PROXY_PORT}:${PROXY_PORT}"
+    volumes:
+      - ${CERT_DIR}/ca.crt:${WORKDIR}/certs/ca.crt:ro,z
+      - ${CERT_DIR}/client.crt:${WORKDIR}/certs/client.crt:ro,z
+    secrets:
+      - source: mobv3_client_key
+        mode: "0440"
+    devices:
+      - "${USB_PRINTER}:${USB_PRINTER}"
+    networks:
+      - mobv3_network
+
+networks:
+  mobv3_network:
+
+volumes:
+  catalog_data:
+  mosquitto_data:
+  mosquitto_log:
+
+secrets:
+  mobv3_mosquitto_server_key:
+    external: true
+  mobv3_catalog_server_key:
+    external: true
+  mobv3_client_key:
+    external: true

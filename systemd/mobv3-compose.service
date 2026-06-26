@@ -1,0 +1,18 @@
+[Unit]
+Description=MOBv3 Podman Compose backend
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/adamhoof/MOBv3
+ExecStart=/home/adamhoof/MOBv3/systemd/mobv3-compose-start.sh mosquitto_broker catalog_service qrproxy
+ExecStop=/usr/bin/podman compose stop qrproxy catalog_service mosquitto_broker
+TimeoutStartSec=5min
+TimeoutStopSec=2min
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=default.target
