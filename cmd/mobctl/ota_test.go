@@ -19,13 +19,13 @@ func TestOTATargetTopics(t *testing.T) {
 
 	qterm := qtermOTATarget()
 	applyOTATopics(cfg, &qterm)
-	if qterm.name != "qterm" || qterm.discoverDevices || qterm.controlTopic != "qterm/control" || qterm.chunkTopic != "qterm/chunk" || qterm.statusTopic != "qterm/status" {
+	if qterm.name != "qterm" || qterm.discoverDevices || qterm.chunkSize != otaQTermChunkSize || qterm.controlTopic != "qterm/control" || qterm.chunkTopic != "qterm/chunk" || qterm.statusTopic != "qterm/status" {
 		t.Fatalf("unexpected qterm target: %+v", qterm)
 	}
 
 	barcode := barcodeOTATarget()
 	applyOTATopics(cfg, &barcode)
-	if barcode.name != "barcode" || !barcode.discoverDevices || barcode.controlTopic != "station/control" || barcode.chunkTopic != "station/chunk" || barcode.statusTopic != "station/status" {
+	if barcode.name != "barcode" || !barcode.discoverDevices || barcode.chunkSize != otaBarcodeChunkSize || barcode.controlTopic != "station/control" || barcode.chunkTopic != "station/chunk" || barcode.statusTopic != "station/status" {
 		t.Fatalf("unexpected barcode target: %+v", barcode)
 	}
 }
