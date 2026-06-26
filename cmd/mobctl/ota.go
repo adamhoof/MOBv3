@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	otaChunkSize       = 16 * 1024
+	otaChunkSize       = 512
 	otaWindowSize      = 8
 	otaTimeout         = 30 * time.Minute
 	otaAckTimeout      = 180 * time.Second
