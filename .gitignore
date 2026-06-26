@@ -1,0 +1,8 @@
+.env
+**/.env
+certs/
+*.db
+*.db-*
+*.mdb.gz
+bin/
+tmp/

@@ -1,0 +1,20 @@
+ARG GO_IMAGE
+ARG ALPINE_IMAGE
+ARG TARGETARCH
+ARG WORKDIR
+
+FROM --platform=linux/${TARGETARCH} ${GO_IMAGE} AS build
+WORKDIR /src
+COPY go.mod go.sum* ./
+RUN go mod download
+COPY . .
+RUN GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -o /out/catalog_service ./cmd/catalog_service
+
+FROM ${ALPINE_IMAGE}
+ARG WORKDIR
+RUN apk add --no-cache bash mdbtools mdbtools-utils ca-certificates libgcc gcompat
+WORKDIR ${WORKDIR}
+COPY --from=build /out/catalog_service /usr/local/bin/catalog_service
+COPY cmd/catalog_service/mdb_to_csv.sh ./mdb_to_csv.sh
+RUN chmod +x ./mdb_to_csv.sh
+ENTRYPOINT ["/usr/local/bin/catalog_service"]
