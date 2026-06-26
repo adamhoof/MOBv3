@@ -63,6 +63,10 @@ services:
         - TARGETARCH=${TARGETARCH}
     restart: unless-stopped
     user: "1000:0"
+    group_add:
+      - keep-groups
+    security_opt:
+      - label=disable
     depends_on:
       - mosquitto_broker
     env_file:

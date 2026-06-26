@@ -30,19 +30,8 @@ wait_for_container() {
 }
 
 wait_for_mqtt() {
-	local port=${MQTT_PORT:-8883}
-	local deadline=$((SECONDS + MQTT_TIMEOUT))
-
 	wait_for_container mobv3_mosquitto_broker "$MQTT_TIMEOUT"
-	while ((SECONDS < deadline)); do
-		if timeout 2 bash -c ":</dev/tcp/127.0.0.1/${port}" >/dev/null 2>&1; then
-			log "mosquitto_broker is accepting connections on port ${port}"
-			return 0
-		fi
-		sleep 1
-	done
-
-	fail "mosquitto_broker did not open port ${port} within ${MQTT_TIMEOUT}s"
+	log "mosquitto_broker container is running"
 }
 
 wait_for_catalog() {
@@ -97,7 +86,7 @@ if [[ " ${services_text} " == *" qrproxy "* ]]; then
 	require_usb_printer
 fi
 
-podman compose up -d --build "${services[@]}"
+podman compose -p mobv3 up -d --build "${services[@]}"
 
 if [[ " ${services_text} " == *" mosquitto_broker "* ]]; then
 	wait_for_mqtt

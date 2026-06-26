@@ -6,9 +6,11 @@ After=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+KillMode=none
 WorkingDirectory=/home/adamhoof/MOBv3
+Environment=MOBV3_APP_DIR=/home/adamhoof/MOBv3
 ExecStart=/home/adamhoof/MOBv3/systemd/mobv3-compose-start.sh mosquitto_broker catalog_service qrproxy
-ExecStop=/usr/bin/podman compose stop qrproxy catalog_service mosquitto_broker
+ExecStop=/usr/bin/podman compose -p mobv3 stop qrproxy catalog_service mosquitto_broker
 TimeoutStartSec=5min
 TimeoutStopSec=2min
 Restart=on-failure
