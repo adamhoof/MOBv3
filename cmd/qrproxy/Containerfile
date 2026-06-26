@@ -1,0 +1,14 @@
+ARG GO_IMAGE
+FROM ${GO_IMAGE} AS builder
+ARG TARGETARCH
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY cmd/qrproxy ./cmd/qrproxy
+COPY internal ./internal
+RUN go test ./cmd/qrproxy
+RUN GOOS=linux GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -trimpath -o /qrproxy ./cmd/qrproxy
+
+FROM scratch
+COPY --from=builder /qrproxy /qrproxy
+ENTRYPOINT ["/qrproxy"]
