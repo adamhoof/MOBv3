@@ -1,35 +1,38 @@
 # MOBv3 Deployment Draft
 
 This directory contains deployment configuration and generators. Application
-code stays under `source/`; generated runtime files stay under
-`deploy/generated/` and are ignored by git.
+code stays under `source/`; generated Quadlet units stay under `deploy/generated/`
+and are ignored by git.
 
 Layout:
 
 ```text
-deploy/config/     versioned machine-specific config inputs
-deploy/lib/        generator helpers
+deploy/env/        committed per-service deployment/runtime env files
 deploy/services/   per-service generators
-deploy/generated/  ignored generated service env files and Quadlet units
+deploy/generated/  ignored generated Quadlet units
 deploy/mosquitto/  Mosquitto runtime config
 deploy/tls/        TLS generation and verification helpers
 ```
 
-Versioned deployment config lives in `deploy/config/machine.env`. It contains
-only values that must be chosen on the target machine:
+Deployment wiring lives in committed per-service env files:
+
+```text
+deploy/env/mosquitto.env
+deploy/env/catalog.env
+deploy/env/qrproxy.env
+```
+
+They contain no secrets and are loaded directly by the generated Quadlet units.
+The only values that must be filled for a target box are physical machine facts:
 
 ```sh
-$EDITOR deploy/config/machine.env
+MOBV3_HOST_BIND_IP=<mini-pc-lan-ip> MOBV3_USB_PRINTER=/dev/usb/lp0 deploy/generate.sh
 ```
 
 The generator intentionally fails loudly if `HOST_BIND_IP` or `USB_PRINTER` is
-blank. They are physical machine facts and should be filled by the operator.
+blank. If preferred, fill them directly in the relevant files under `deploy/env/`.
 
-Everything else is project-owned and hardcoded in the generator layer: ports,
-service names, image tags, cert paths, credential paths, topics, and in-container
-paths.
-
-Generate self-contained service env files and Quadlet units:
+Generate Quadlet units:
 
 ```sh
 deploy/generate.sh

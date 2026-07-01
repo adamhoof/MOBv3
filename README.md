@@ -92,12 +92,16 @@ Verify TLS files against each other without regenerating anything:
 deploy/tls/verify_tls.sh --cert-dir <cert-dir>
 ```
 
-Generate service-specific env files and Quadlet units:
+Generate Quadlet units:
 
 ```sh
-$EDITOR deploy/config/machine.env
+MOBV3_HOST_BIND_IP=<mini-pc-lan-ip> MOBV3_USB_PRINTER=/dev/usb/lp0 \
 deploy/generate.sh
 ```
+
+For persistent deployment configuration, fill `HOST_BIND_IP` in each service env
+and `USB_PRINTER` in `deploy/env/qrproxy.env`, then run `deploy/generate.sh`
+directly.
 
 Install generated Quadlet units for the rootless user service manager:
 
@@ -107,7 +111,7 @@ cp deploy/generated/quadlet/* ~/.config/containers/systemd/
 systemctl --user daemon-reload
 ```
 
-Generated env files live under `deploy/generated/env/` and are loaded by the generated Quadlet units. They are self-contained from each service's point of view and are ignored by git. Private keys are exposed to containers through systemd `LoadCredentialEncrypted=` and read-only credential mounts, not Podman secrets.
+Committed service env files live under `deploy/env/` and are loaded directly by the generated Quadlet units. Private keys are exposed to containers through systemd `LoadCredentialEncrypted=` and read-only credential mounts, not Podman secrets.
 
 ## Autostart
 

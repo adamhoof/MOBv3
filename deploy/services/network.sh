@@ -2,14 +2,11 @@
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck disable=SC1091
-source "$SCRIPT_DIR/../lib/config.sh"
+# Internal generator. deploy/generate.sh exports required values.
 
-prepare_outputs
-
-cat >"$quadlet_out/mobv3.network" <<EOF
+cat >"$QUADLET_OUT/mobv3.network" <<EOF
 [Network]
 NetworkName=mobv3_network
 EOF
 
-log "Generated network Quadlet unit"
+printf '==> Generated network Quadlet unit\n'
