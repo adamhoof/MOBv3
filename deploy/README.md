@@ -49,5 +49,18 @@ systemctl --user enable --now mobv3-qrproxy.service
 ```
 
 The generated Quadlet units include `.build` units for local application images,
-so there is no separate image build script. Private keys still use existing
-Podman secrets for now; systemd encrypted credentials can replace them later.
+so there is no separate image build script.
+
+Generate public certs and encrypted credentials:
+
+```sh
+deploy/tls/conf_gen.sh --server-name <host-or-ip> --cert-dir certs
+```
+
+Public certs are written to `certs/`. Private keys are generated in a temporary
+directory, verified, encrypted with `systemd-creds --user`, and removed.
+Encrypted credentials are written to `deploy/credentials/` by default and are
+ignored by git.
+
+Generated Quadlet units use `LoadCredentialEncrypted=` and read-only `%d/...`
+mounts to expose decrypted keys to containers at `/run/secrets/...`.

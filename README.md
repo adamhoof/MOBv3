@@ -70,7 +70,7 @@ Import writes into `products_next`, indexes it, then atomically swaps it into `p
 
 ## Support Scripts
 
-Generate TLS material and Podman secrets:
+Generate public TLS certs and systemd encrypted credentials:
 
 ```sh
 deploy/tls/conf_gen.sh --server-name <host-or-ip> --cert-dir <cert-dir>
@@ -78,11 +78,13 @@ deploy/tls/conf_gen.sh --server-name <host-or-ip> --cert-dir <cert-dir>
 
 Use the IP/DNS name that clients will actually connect to. It is written into the server certificate SAN.
 
-Use `--force` to replace existing generated Podman secrets:
+Use `--force` to replace existing encrypted credentials:
 
 ```sh
 deploy/tls/conf_gen.sh --server-name <host-or-ip> --cert-dir <cert-dir> --force
 ```
+
+Public certs are written to `<cert-dir>`. Private keys are generated in a temporary directory, verified, encrypted with `systemd-creds --user`, and removed. Encrypted credentials are written to `deploy/credentials/` by default and are ignored by git.
 
 Verify TLS files against each other without regenerating anything:
 
@@ -106,7 +108,7 @@ cp deploy/generated/quadlet/* ~/.config/containers/systemd/
 systemctl --user daemon-reload
 ```
 
-Generated env files live under `deploy/generated/env/` and are loaded by the generated Quadlet units. They are self-contained from each service's point of view and are ignored by git.
+Generated env files live under `deploy/generated/env/` and are loaded by the generated Quadlet units. They are self-contained from each service's point of view and are ignored by git. Private keys are exposed to containers through systemd `LoadCredentialEncrypted=` and read-only `%d/...` mounts, not Podman secrets.
 
 ## Autostart
 

@@ -11,6 +11,7 @@ TARGETARCH=amd64
 
 WORKDIR=/app
 CERT_DIR=/home/adamhoof/MOBv3/certs
+CREDENTIAL_DIR=/home/adamhoof/MOBv3/deploy/credentials
 
 MQTT_PROTOCOL=tcps
 MQTT_PORT=8883

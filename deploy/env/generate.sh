@@ -31,6 +31,7 @@ init_site() {
     printf '\n'
     prompt_value WORKDIR /app
     prompt_value CERT_DIR /home/adamhoof/MOBv3/certs
+    prompt_value CREDENTIAL_DIR /home/adamhoof/MOBv3/deploy/credentials
     printf '\n'
     prompt_value MQTT_PROTOCOL tcps
     prompt_value MQTT_PORT 8883
@@ -72,6 +73,7 @@ set +a
 : "${TARGETARCH:?}"
 : "${WORKDIR:?}"
 : "${CERT_DIR:?}"
+: "${CREDENTIAL_DIR:?}"
 : "${MQTT_PROTOCOL:?}"
 : "${MQTT_PORT:?}"
 : "${CATALOG_HTTP_PORT:?}"
@@ -169,9 +171,10 @@ Volume=mobv3_mosquitto_data:/mosquitto/data
 Volume=mobv3_mosquitto_log:/mosquitto/log
 Volume=$CERT_DIR/mosquitto_server.crt:/mosquitto/certs/mosquitto_server.crt:ro,Z
 Volume=$CERT_DIR/ca.crt:/mosquitto/certs/ca.crt:ro,Z
-Secret=mobv3_mosquitto_server_key,type=mount
+Volume=\${CREDENTIALS_DIRECTORY}/mobv3_mosquitto_server_key:/run/secrets/mobv3_mosquitto_server_key:ro
 
 [Service]
+LoadCredentialEncrypted=mobv3_mosquitto_server_key:$CREDENTIAL_DIR/mobv3_mosquitto_server_key.cred
 Restart=always
 RestartSec=5s
 
@@ -196,10 +199,12 @@ Volume=mobv3_catalog_data:/data
 Volume=$CERT_DIR/catalog_server.crt:$WORKDIR/certs/catalog_server.crt:ro,Z
 Volume=$CERT_DIR/ca.crt:$WORKDIR/certs/ca.crt:ro,Z
 Volume=$CERT_DIR/client.crt:$WORKDIR/certs/client.crt:ro,Z
-Secret=mobv3_catalog_server_key,type=mount
-Secret=mobv3_client_key,type=mount
+Volume=\${CREDENTIALS_DIRECTORY}/mobv3_catalog_server_key:/run/secrets/mobv3_catalog_server_key:ro
+Volume=\${CREDENTIALS_DIRECTORY}/mobv3_client_key:/run/secrets/mobv3_client_key:ro
 
 [Service]
+LoadCredentialEncrypted=mobv3_catalog_server_key:$CREDENTIAL_DIR/mobv3_catalog_server_key.cred
+LoadCredentialEncrypted=mobv3_client_key:$CREDENTIAL_DIR/mobv3_client_key.cred
 Restart=always
 RestartSec=5s
 
@@ -224,10 +229,11 @@ Network=mobv3.network
 PublishPort=$HOST_BIND_IP:$PROXY_PORT:$PROXY_PORT
 Volume=$CERT_DIR/ca.crt:$WORKDIR/certs/ca.crt:ro,Z
 Volume=$CERT_DIR/client.crt:$WORKDIR/certs/client.crt:ro,Z
-Secret=mobv3_client_key,type=mount
+Volume=\${CREDENTIALS_DIRECTORY}/mobv3_client_key:/run/secrets/mobv3_client_key:ro
 AddDevice=$USB_PRINTER:$USB_PRINTER
 
 [Service]
+LoadCredentialEncrypted=mobv3_client_key:$CREDENTIAL_DIR/mobv3_client_key.cred
 Restart=always
 RestartSec=5s
 
