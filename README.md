@@ -73,7 +73,7 @@ Import writes into `products_next`, indexes it, then atomically swaps it into `p
 Generate TLS material and Podman secrets:
 
 ```sh
-conf/conf_gen.sh --server-name <host-or-ip> --cert-dir <cert-dir>
+deploy/tls/conf_gen.sh --server-name <host-or-ip> --cert-dir <cert-dir>
 ```
 
 Use the IP/DNS name that clients will actually connect to. It is written into the server certificate SAN.
@@ -81,34 +81,41 @@ Use the IP/DNS name that clients will actually connect to. It is written into th
 Use `--force` to replace existing generated Podman secrets:
 
 ```sh
-conf/conf_gen.sh --server-name <host-or-ip> --cert-dir <cert-dir> --force
+deploy/tls/conf_gen.sh --server-name <host-or-ip> --cert-dir <cert-dir> --force
 ```
 
 Verify TLS files against each other without regenerating anything:
 
 ```sh
-conf/verify_tls.sh --cert-dir <cert-dir>
+deploy/tls/verify_tls.sh --cert-dir <cert-dir>
 ```
 
-Start selected Compose services and wait for them to become ready:
+Generate service-specific env files and Quadlet units:
 
 ```sh
-systemd/mobv3-compose-start.sh mosquitto_broker catalog_service
+cp deploy/env/site.example deploy/env/site.local
+$EDITOR deploy/env/site.local
+deploy/env/generate.sh
 ```
 
-Run the integration acceptance test:
+Install generated Quadlet units for the rootless user service manager:
 
 ```sh
-tests/integration.sh --cert-dir <cert-dir>
+mkdir -p ~/.config/containers/systemd
+cp deploy/generated/quadlet/* ~/.config/containers/systemd/
+systemctl --user daemon-reload
 ```
 
-The integration test generates local test TLS material if needed, starts the required services, imports `tests/data/catalog_5_products.mdb`, verifies MQTT lookup, and checks concurrent import rejection.
+Generated env files live under `deploy/generated/env/` and are loaded by the generated Quadlet units. They are self-contained from each service's point of view and are ignored by git.
 
 ## Autostart
 
-Register the user systemd unit from `systemd/mobv3-compose.service`. It calls `systemd/mobv3-compose-start.sh`, which launches the configured Compose services and waits for readiness.
+Enable the generated Quadlet services:
 
 ```sh
-systemctl --user enable --now mobv3-compose.service
-systemctl --user status mobv3-compose.service
+systemctl --user enable --now mobv3-mosquitto.service
+systemctl --user enable --now mobv3-catalog.service
+systemctl --user enable --now mobv3-qrproxy.service
 ```
+
+Inspect service state with `systemctl --user status <unit>` and logs with `journalctl --user -u <unit>`.
