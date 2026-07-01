@@ -1,7 +1,7 @@
 # MOBv3 Deployment Draft
 
 This directory contains deployment configuration and generators. Application
-code stays under `cmd/` and `internal/`; generated runtime files stay under
+code stays under `source/`; generated runtime files stay under
 `deploy/generated/` and are ignored by git.
 
 Layout:

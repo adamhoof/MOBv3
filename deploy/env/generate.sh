@@ -88,6 +88,7 @@ set +a
 
 ENV_OUT="$ROOT_DIR/deploy/generated/env"
 QUADLET_OUT="$ROOT_DIR/deploy/generated/quadlet"
+SOURCE_DIR="$APP_DIR/source"
 mkdir -p "$ENV_OUT" "$QUADLET_OUT"
 
 cat >"$ENV_OUT/mosquitto.env" <<EOF
@@ -136,8 +137,8 @@ EOF
 cat >"$QUADLET_OUT/mobv3-catalog.build" <<EOF
 [Build]
 ImageTag=localhost/mobv3-catalog_service:latest
-File=$APP_DIR/cmd/catalog_service/Containerfile
-SetWorkingDirectory=$APP_DIR
+File=$SOURCE_DIR/cmd/catalog_service/Containerfile
+SetWorkingDirectory=$SOURCE_DIR
 BuildArg=GO_IMAGE=$GO_IMAGE
 BuildArg=ALPINE_IMAGE=$ALPINE_IMAGE
 BuildArg=TARGETARCH=$TARGETARCH
@@ -147,8 +148,8 @@ EOF
 cat >"$QUADLET_OUT/mobv3-qrproxy.build" <<EOF
 [Build]
 ImageTag=localhost/mobv3-qrproxy:latest
-File=$APP_DIR/cmd/qrproxy/Containerfile
-SetWorkingDirectory=$APP_DIR
+File=$SOURCE_DIR/cmd/qrproxy/Containerfile
+SetWorkingDirectory=$SOURCE_DIR
 BuildArg=GO_IMAGE=$GO_IMAGE
 BuildArg=TARGETARCH=$TARGETARCH
 EOF

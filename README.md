@@ -57,7 +57,7 @@ The default `mobctl` build contains only `upd`, `ss`, and `sw`.
 Build the admin variant to include OTA commands:
 
 ```sh
-go build -tags admin ./cmd/mobctl
+(cd source && go build -tags admin ./cmd/mobctl)
 mobctl --file .env qterm-ota qterm.bin
 mobctl --file .env barcode-ota station.bin
 ```
@@ -108,7 +108,7 @@ cp deploy/generated/quadlet/* ~/.config/containers/systemd/
 systemctl --user daemon-reload
 ```
 
-Generated env files live under `deploy/generated/env/` and are loaded by the generated Quadlet units. They are self-contained from each service's point of view and are ignored by git. Private keys are exposed to containers through systemd `LoadCredentialEncrypted=` and read-only `%d/...` mounts, not Podman secrets.
+Generated env files live under `deploy/generated/env/` and are loaded by the generated Quadlet units. They are self-contained from each service's point of view and are ignored by git. Private keys are exposed to containers through systemd `LoadCredentialEncrypted=` and read-only credential mounts, not Podman secrets.
 
 ## Autostart
 
