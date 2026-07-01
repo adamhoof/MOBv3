@@ -62,7 +62,7 @@ services:
         - GO_IMAGE=${GO_IMAGE}
         - TARGETARCH=${TARGETARCH}
     restart: unless-stopped
-    user: "1000:0"
+    user: "0:0"
     group_add:
       - keep-groups
     security_opt:
