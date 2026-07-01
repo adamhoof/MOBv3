@@ -95,9 +95,8 @@ deploy/tls/verify_tls.sh --cert-dir <cert-dir>
 Generate service-specific env files and Quadlet units:
 
 ```sh
-cp deploy/env/site.example deploy/env/site.local
-$EDITOR deploy/env/site.local
-deploy/env/generate.sh
+$EDITOR deploy/config/machine.env
+deploy/generate.sh
 ```
 
 Install generated Quadlet units for the rootless user service manager:

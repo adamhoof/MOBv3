@@ -7,29 +7,32 @@ code stays under `source/`; generated runtime files stay under
 Layout:
 
 ```text
-deploy/env/        site config input and generator
+deploy/config/     versioned machine-specific config inputs
+deploy/lib/        generator helpers
+deploy/services/   per-service generators
 deploy/generated/  ignored generated service env files and Quadlet units
 deploy/mosquitto/  Mosquitto runtime config
 deploy/tls/        TLS generation and verification helpers
 ```
 
-Create site config:
+Versioned deployment config lives in `deploy/config/machine.env`. It contains
+only values that must be chosen on the target machine:
 
 ```sh
-cp deploy/env/site.example deploy/env/site.local
-$EDITOR deploy/env/site.local
+$EDITOR deploy/config/machine.env
 ```
 
-or initialize it interactively:
+The generator intentionally fails loudly if `HOST_BIND_IP` or `USB_PRINTER` is
+blank. They are physical machine facts and should be filled by the operator.
 
-```sh
-deploy/env/generate.sh --init
-```
+Everything else is project-owned and hardcoded in the generator layer: ports,
+service names, image tags, cert paths, credential paths, topics, and in-container
+paths.
 
 Generate self-contained service env files and Quadlet units:
 
 ```sh
-deploy/env/generate.sh
+deploy/generate.sh
 ```
 
 Install generated Quadlet units on the target host:

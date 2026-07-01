@@ -6,6 +6,5 @@ certs/
 *.mdb.gz
 bin/
 tmp/
-deploy/env/site.local
 deploy/credentials/*.cred
 deploy/generated/
