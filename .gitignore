@@ -6,3 +6,8 @@ certs/
 *.mdb.gz
 bin/
 tmp/
+deploy/env/site.local
+deploy/generated/env/*.env
+deploy/generated/quadlet/*
+!deploy/generated/env/.gitkeep
+!deploy/generated/quadlet/.gitkeep

@@ -1,0 +1,26 @@
+# Copy to deploy/env/site.local and adjust for the target machine.
+# This file contains deployment wiring only, not private keys or tokens.
+
+APP_DIR=/home/adamhoof/MOBv3
+HOST_BIND_IP=10.0.0.149
+
+GO_IMAGE=docker.io/library/golang:1.26-alpine
+ALPINE_IMAGE=docker.io/library/alpine:3.20
+MOSQUITTO_IMAGE=docker.io/library/eclipse-mosquitto:2.1.2-alpine
+TARGETARCH=amd64
+
+WORKDIR=/app
+CERT_DIR=/home/adamhoof/MOBv3/certs
+
+MQTT_PROTOCOL=tcps
+MQTT_PORT=8883
+CATALOG_HTTP_PORT=8443
+PROXY_PORT=9100
+USB_PRINTER=/dev/usb/lp0
+
+CATALOG_DB_PATH=/data/catalog.db
+CATALOG_IMPORT_ENDPOINT=/catalog/import
+MQTT_CATALOG_CLIENT_ID=catalog_service
+MQTT_TOPIC_REQUEST=product/+/+
+QRPROXY_MQTT_CLIENT_ID=qrproxy
+QTERM_MQTT_TOPIC=qterm/payments

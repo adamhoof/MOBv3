@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat >&2 <<'EOF'
-usage: conf/conf_gen.sh --server-name <ip-or-dns> --cert-dir <path> [--force]
+usage: deploy/tls/conf_gen.sh --server-name <ip-or-dns> --cert-dir <path> [--force]
 
 Generates MOBv3 TLS certs and creates Podman secrets:
   certs/ca.crt
@@ -72,7 +72,7 @@ if ! command -v podman >/dev/null 2>&1; then
   exit 1
 fi
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 if [[ "$cert_dir" != /* ]]; then
   cert_dir="$repo_root/$cert_dir"
 fi
@@ -86,7 +86,7 @@ if [[ "$server_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$server_name"
 else
   base_san_entries+=("DNS:$server_name")
 fi
-mosquitto_san_entries=("${base_san_entries[@]}" "DNS:mosquitto_broker")
+mosquitto_san_entries=("${base_san_entries[@]}" "DNS:mobv3_mosquitto_broker")
 catalog_san_entries=("${base_san_entries[@]}")
 mosquitto_san="$(IFS=,; echo "${mosquitto_san_entries[*]}")"
 catalog_san="$(IFS=,; echo "${catalog_san_entries[*]}")"
@@ -109,7 +109,7 @@ openssl req -x509 -newkey rsa:4096 -days 3650 -nodes \
 openssl req -newkey rsa:4096 -nodes \
   -keyout "$cert_dir/mosquitto_server.key" \
   -out "$cert_dir/mosquitto_server.csr" \
-  -subj "/CN=mosquitto_broker" \
+  -subj "/CN=mobv3_mosquitto_broker" \
   -addext "subjectAltName=$mosquitto_san"
 
 openssl x509 -req \
@@ -153,7 +153,7 @@ podman secret create mobv3_mosquitto_server_key "$cert_dir/mosquitto_server.key"
 podman secret create mobv3_catalog_server_key "$cert_dir/catalog_server.key" >/dev/null
 podman secret create mobv3_client_key "$cert_dir/client.key" >/dev/null
 
-"$repo_root/conf/verify_tls.sh" --cert-dir "$cert_dir"
+"$repo_root/deploy/tls/verify_tls.sh" --cert-dir "$cert_dir"
 
 cat <<EOF
 Generated MOBv3 TLS assets for $server_name

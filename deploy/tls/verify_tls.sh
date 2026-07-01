@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cert_dir=""
 
 usage() {
-  echo "usage: conf/verify_tls.sh --cert-dir <path>" >&2
+  echo "usage: deploy/tls/verify_tls.sh --cert-dir <path>" >&2
 }
 
 while [ "$#" -gt 0 ]; do
