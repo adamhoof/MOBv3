@@ -3,12 +3,12 @@ module github.com/adamhoof/MOBv3
 go 1.26
 
 require (
+	github.com/Regis24GmbH/go-diacritics v1.0.0
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 	turso.tech/database/tursogo v0.6.1
 )
 
 require (
-	github.com/Regis24GmbH/go-diacritics v1.0.0 // indirect
 	github.com/ebitengine/purego v0.9.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/tursodatabase/turso-go-platform-libs v0.6.1 // indirect
