@@ -1,0 +1,8 @@
+ARG MOSQUITTO_IMAGE=docker.io/library/eclipse-mosquitto:2.1.2-alpine
+FROM ${MOSQUITTO_IMAGE}
+
+COPY deploy/mosquitto/mobv3-mosquitto-entrypoint.sh /usr/local/bin/mobv3-mosquitto-entrypoint.sh
+RUN chmod 0755 /usr/local/bin/mobv3-mosquitto-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/mobv3-mosquitto-entrypoint.sh"]
+CMD ["mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
