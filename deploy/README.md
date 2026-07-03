@@ -1,20 +1,19 @@
 # MOBv3 Deployment Draft
 
 This directory contains deployment configuration and generators. Application
-code stays under `source/`; generated Quadlet units stay under `deploy/generated/`
-and are ignored by git.
+code stays under `source/`; generated files stay under `deploy/generated/` and
+are ignored by git.
 
 Layout:
 
 ```text
-deploy/env/        committed per-service deployment/runtime env files
+deploy/env/        committed per-service runtime/config env files
 deploy/services/   per-service generators
-deploy/generated/  ignored generated Quadlet units
-deploy/mosquitto/  Mosquitto runtime config
+deploy/generated/  ignored generated Quadlet units, systemd target, and Mosquitto config
 deploy/tls/        TLS generation and verification helpers
 ```
 
-Deployment wiring lives in committed per-service env files:
+Runtime service config lives in committed per-service env files:
 
 ```text
 deploy/env/mosquitto.env
@@ -22,15 +21,18 @@ deploy/env/catalog.env
 deploy/env/qrproxy.env
 ```
 
-They contain no secrets and are loaded directly by the generated Quadlet units.
-The only values that must be filled for a target box are physical machine facts:
+They contain no secrets and are loaded directly by the generated Quadlet units
+where the service needs runtime environment. Host deployment facts such as
+`APP_DIR`, `CERT_DIR`, `CREDENTIAL_DIR`, image tags, `PUBLIC_BIND_IP`, and
+`USB_PRINTER` are generator variables with defaults in `deploy/generate.sh`.
+Override them only when needed:
 
 ```sh
-MOBV3_HOST_BIND_IP=<mini-pc-lan-ip> MOBV3_USB_PRINTER=/dev/usb/lp0 deploy/generate.sh
+PUBLIC_BIND_IP=<mini-pc-lan-ip> USB_PRINTER=/dev/usb/lp0 deploy/generate.sh
 ```
 
-The generator intentionally fails loudly if `HOST_BIND_IP` or `USB_PRINTER` is
-blank. If preferred, fill them directly in the relevant files under `deploy/env/`.
+The generator auto-detects `PUBLIC_BIND_IP` from the host's default IPv4 route
+when it is not set. `USB_PRINTER` defaults to `/dev/usb/lp0`.
 
 Generate Quadlet units:
 
@@ -43,10 +45,13 @@ Install generated Quadlet units on the target host:
 ```sh
 mkdir -p ~/.config/containers/systemd
 cp deploy/generated/quadlet/* ~/.config/containers/systemd/
+mkdir -p ~/.config/systemd/user
+cp deploy/generated/systemd/* ~/.config/systemd/user/
 systemctl --user daemon-reload
+systemctl --user enable --now mobv3.target
 ```
 
-Start services:
+Start services manually without enabling autostart:
 
 ```sh
 systemctl --user enable --now mobv3-mosquitto.service

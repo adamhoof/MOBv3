@@ -95,23 +95,25 @@ deploy/tls/verify_tls.sh --cert-dir <cert-dir>
 Generate Quadlet units:
 
 ```sh
-MOBV3_HOST_BIND_IP=<mini-pc-lan-ip> MOBV3_USB_PRINTER=/dev/usb/lp0 \
-deploy/generate.sh
+PUBLIC_BIND_IP=<mini-pc-lan-ip> deploy/generate.sh
 ```
 
-For persistent deployment configuration, fill `HOST_BIND_IP` in each service env
-and `USB_PRINTER` in `deploy/env/qrproxy.env`, then run `deploy/generate.sh`
-directly.
+The generator auto-detects the public bind IP from the host's default IPv4 route;
+set `PUBLIC_BIND_IP` only to override it. `USB_PRINTER` defaults to
+`/dev/usb/lp0`; override it only when the printer appears elsewhere.
 
 Install generated Quadlet units for the rootless user service manager:
 
 ```sh
 mkdir -p ~/.config/containers/systemd
 cp deploy/generated/quadlet/* ~/.config/containers/systemd/
+mkdir -p ~/.config/systemd/user
+cp deploy/generated/systemd/* ~/.config/systemd/user/
 systemctl --user daemon-reload
+systemctl --user enable --now mobv3.target
 ```
 
-Committed service env files live under `deploy/env/` and are loaded directly by the generated Quadlet units. Private keys are exposed to containers through systemd `LoadCredentialEncrypted=` and read-only credential mounts, not Podman secrets.
+Committed service env files live under `deploy/env/` and contain runtime service config. Host deployment facts are generator variables in `deploy/generate.sh`. Private keys are exposed to containers through systemd `LoadCredentialEncrypted=` and read-only credential mounts, not Podman secrets.
 
 ## Autostart
 
