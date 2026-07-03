@@ -92,6 +92,12 @@ Verify TLS files against each other without regenerating anything:
 deploy/tls/verify_tls.sh --cert-dir <cert-dir>
 ```
 
+Run the isolated Podman integration test stack:
+
+```sh
+tests/integration.sh
+```
+
 Generate Quadlet units:
 
 ```sh

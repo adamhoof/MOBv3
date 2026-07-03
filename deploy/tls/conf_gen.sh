@@ -106,7 +106,7 @@ if [[ "$server_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$server_name"
 else
   base_san_entries+=("DNS:$server_name")
 fi
-mosquitto_san_entries=("${base_san_entries[@]}" "DNS:mobv3_mosquitto_broker")
+mosquitto_san_entries=("${base_san_entries[@]}" "DNS:mosquitto_broker" "DNS:mobv3_mosquitto_broker")
 catalog_san_entries=("${base_san_entries[@]}")
 mosquitto_san="$(IFS=,; echo "${mosquitto_san_entries[*]}")"
 catalog_san="$(IFS=,; echo "${catalog_san_entries[*]}")"
